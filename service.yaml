@@ -30,8 +30,8 @@ spec:
           limits:
             cpu: 1
             memory: 256Mi
-      serviceAccountName: 992639108971-compute@developer.gserviceaccount.com
-      timeoutSeconds: 1200
+      serviceAccountName: cloud-sql-client@e-wallet-308708.iam.gserviceaccount.com
+      timeoutSeconds: 3600
   traffic:
   - latestRevision: true
     percent: 100

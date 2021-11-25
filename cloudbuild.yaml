@@ -47,4 +47,6 @@ steps:
       - 'DB_USER=ewallet:latest'
       - 'DB_PASS=password:latest'
       - 'DB_NAME=ewalletdb:latest'
+    options:
+    logging: CLOUD_LOGGING_ONLY
 # [END cloudbuild_basic_config]
