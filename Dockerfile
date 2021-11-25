@@ -87,12 +87,12 @@ RUN php artisan cache:clear
 RUN php artisan route:cache
 RUN chmod +x /var/www/docker/run.sh
 
-EXPOSE 80
+
 
 # Copy code to /var/www
 RUN chown -R www-data:www-data /var/www
 RUN php artisan optimize
 
 ENTRYPOINT ["/var/www/docker/run.sh"]
-
+EXPOSE 80 443
 CMD [ "sh", "/var/www/docker/run.sh" ]
