@@ -82,11 +82,17 @@ RUN php artisan key:generate
 #RUN php artisan migrate
 #RUN php artisan db:seed
 RUN php artisan storage:link
+RUN php artisan config:cache
+RUN php artisan cache:clear
+RUN php artisan route:cache
 RUN chmod +x /var/www/docker/run.sh
 
-EXPOSE 8080
+EXPOSE 80
 
 # Copy code to /var/www
 RUN chown -R www-data:www-data /var/www
+RUN php artisan optimize
 
 ENTRYPOINT ["/var/www/docker/run.sh"]
+
+CMD [ "sh", "/var/www/docker/run.sh" ]

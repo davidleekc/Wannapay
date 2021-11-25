@@ -2,8 +2,6 @@
 
 cd /var/www
 
-php artisan config:cache
-php artisan cache:clear
-php artisan route:cache
-php artisan optimize
 /usr/bin/supervisord -c /etc/supervisord.conf
+
+php artisan serve --host=127.0.0.1 --port=80

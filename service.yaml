@@ -2,7 +2,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   annotations:
-    client.knative.dev/user-image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:v5.2-24-11-21
+    client.knative.dev/user-image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:v5.4-25-11-21
     run.googleapis.com/ingress: all
   labels:
     cloud.googleapis.com/location: asia-southeast1
@@ -12,27 +12,26 @@ spec:
   template:
     metadata:
       annotations:
+        run.googleapis.com/cpu-throttling: true
         autoscaling.knative.dev/maxScale: '100'
         run.googleapis.com/client-name: cloud-console
         run.googleapis.com/cloudsql-instances: e-wallet-308708:asia-southeast1:ewallet-laravel-db
         run.googleapis.com/execution-environment: gen1
-        run.googleapis.com/vpc-access-connector: projects/e-wallet-308708/locations/asia-southeast1/connectors/serverless-vpc-308708
-        run.googleapis.com/vpc-access-egress: private-ranges-only
         run.googleapis.com/vpc-access-connector: serverless-vpc-308708
-      name: wannapay-ewallet-00001-wes
+      name: wannapay-ewallet
     spec:
       containerConcurrency: 80
       containers:
-      - image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:v5.2-24-11-21
+      - image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:v5.4-25-11-21
         ports:
-        - containerPort: 8080
+        - containerPort: 80
           name: http1
         resources:
           limits:
-            cpu: 1000m
-            memory: 128Mi
+            cpu: 1
+            memory: 256Mi
       serviceAccountName: 992639108971-compute@developer.gserviceaccount.com
-      timeoutSeconds: 300
+      timeoutSeconds: 1200
   traffic:
   - latestRevision: true
     percent: 100
