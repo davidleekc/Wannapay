@@ -1,0 +1,42 @@
+{
+    "configurations": [
+        {
+            "name": "Listen for Xdebug",
+            "type": "php",
+            "request": "launch",
+            "port": 9003
+        },
+        {
+            "name": "Cloud Run: Run/Debug Locally",
+            "type": "cloudcode.cloudrun",
+            "request": "launch",
+            "build": {
+                "docker": {
+                    "path": ".",
+                    "target": "Dockerfile",
+                    "buildArgs": {}
+                }
+            },
+            "image": "asia.gcr.io/e-wallet-308708/wannapay-ewallet:v5.5",
+            "service": {
+                "name": "wannapay-ewallet",
+                "containerPort": 80,
+                "serviceAccountName": "992639108971-compute@developer.gserviceaccount.com",
+                "cloudSqlInstances": [
+                    "ewallet-laravel-db"
+                ],
+                "resources": {
+                    "limits": {
+                        "cpu": 1,
+                        "memory": "256Mi"
+                    }
+                }
+            },
+            "target": {
+                "minikube": {}
+            },
+            "watch": true,
+            "externalPortForward": 8080
+        }
+    ]
+}

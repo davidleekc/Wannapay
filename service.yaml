@@ -2,7 +2,7 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   annotations:
-    client.knative.dev/user-image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:v5.4-25-11-21
+    client.knative.dev/user-image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:latest
     run.googleapis.com/ingress: all
   labels:
     cloud.googleapis.com/location: asia-southeast1
@@ -22,7 +22,7 @@ spec:
     spec:
       containerConcurrency: 80
       containers:
-      - image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:v5.4-25-11-21
+      - image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:latest
         ports:
         - containerPort: 80
           name: http1
