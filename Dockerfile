@@ -78,21 +78,12 @@ RUN touch /var/log/php/errors.log && chmod 777 /var/log/php/errors.log
 # Deployment steps
 COPY .env.example /var/www/.env
 RUN composer install --optimize-autoloader --no-dev
-RUN php artisan key:generate
-#RUN php artisan migrate
-#RUN php artisan db:seed
-RUN php artisan storage:link
-RUN php artisan config:cache
-RUN php artisan cache:clear
-RUN php artisan route:cache
+
 RUN chmod +x /var/www/docker/run.sh
-
-
 
 # Copy code to /var/www
 RUN chown -R www-data:www-data /var/www
-RUN php artisan optimize
 
-ENTRYPOINT ["/var/www/docker/run.sh"]
-EXPOSE 80
+EXPOSE 9000
+
 CMD [ "sh", "/var/www/docker/run.sh" ]
