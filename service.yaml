@@ -15,7 +15,7 @@ spec:
         run.googleapis.com/cpu-throttling: true
         autoscaling.knative.dev/maxScale: '100'
         run.googleapis.com/client-name: cloud-console
-        run.googleapis.com/cloudsql-instances: e-wallet-308708:asia-southeast1:ewallet-laravel-db
+        run.googleapis.com/cloudsql-instances: ewallet-laravel-db
         run.googleapis.com/execution-environment: gen2
       name: wannapay-ewallet
     spec:
@@ -24,7 +24,7 @@ spec:
       - image: asia.gcr.io/e-wallet-308708/wannapay-ewallet:latest
         ports:
         - containerPort: 80
-          name: http1
+          name: http1.1
         resources:
           limits:
             cpu: 1

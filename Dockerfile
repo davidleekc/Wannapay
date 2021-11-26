@@ -67,16 +67,17 @@ RUN chmod 777 -R /var/www/storage/logs
 RUN chmod 777 -R /var/www/bootstrap/cache
 
 # Copy nginx/php/supervisor configs
-COPY docker/supervisor.conf /etc/supervisord.conf
-COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
-COPY docker/nginx.conf /etc/nginx/sites-enabled/default
+COPY ./docker/supervisor.conf /etc/supervisord.conf
+COPY ./docker/php.ini /usr/local/etc/php/conf.d/app.ini
+COPY ./docker/nginx.conf /etc/nginx/sites-enabled/default
 
 # PHP Error Log Files
 RUN mkdir /var/log/php
 RUN touch /var/log/php/errors.log && chmod 777 /var/log/php/errors.log
 
 # Deployment steps
-COPY .env.example /var/www/.env
+COPY ./.env.example /var/www/.env
+RUN chmod ugo+rwx /var/www/.env
 RUN composer install --optimize-autoloader --no-dev
 
 RUN chmod +x /var/www/docker/run.sh
