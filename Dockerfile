@@ -94,5 +94,5 @@ RUN chown -R www-data:www-data /var/www
 RUN php artisan optimize
 
 ENTRYPOINT ["/var/www/docker/run.sh"]
-EXPOSE 8080
+EXPOSE 80
 CMD [ "sh", "/var/www/docker/run.sh" ]
