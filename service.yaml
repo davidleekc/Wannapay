@@ -16,8 +16,7 @@ spec:
         autoscaling.knative.dev/maxScale: '100'
         run.googleapis.com/client-name: cloud-console
         run.googleapis.com/cloudsql-instances: e-wallet-308708:asia-southeast1:ewallet-laravel-db
-        run.googleapis.com/execution-environment: gen1
-        run.googleapis.com/vpc-access-connector: serverless-vpc-308708
+        run.googleapis.com/execution-environment: gen2
       name: wannapay-ewallet
     spec:
       containerConcurrency: 80
