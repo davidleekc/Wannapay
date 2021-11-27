@@ -7,12 +7,10 @@ php artisan key:generate
 php artisan storage:link
 php artisan config:cache
 
-php artisan optimise
+php artisan optimize
 
 #sed -i "s,LISTEN_PORT,$port,g", /etc/nginx/nginx.conf
 
 php-fpm -D
-
-while ! nc -w 1 -z 127.0.0.1 9000; do sleep 0.1; done;
 
 nginx
