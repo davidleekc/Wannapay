@@ -12,3 +12,5 @@ npm-debug.log
 yarn-error.log
 .php_cs.cache
 /docker.zip
+/docker/cert/
+/mysql/

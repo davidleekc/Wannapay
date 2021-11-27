@@ -10,6 +10,7 @@ ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/do
 RUN chmod +x /usr/local/bin/install-php-extensions && sync \
     && install-php-extensions \
     pdo_mysql \
+    bcmath \
     zip \
     exif \
     pcntl \
@@ -65,26 +66,24 @@ COPY . /var/www
 RUN chmod 777 -R /var/www/storage
 RUN chmod 777 -R /var/www/storage/logs
 RUN chmod 777 -R /var/www/bootstrap/cache
+RUN chmod 777 -R /tmp
 
 # Copy nginx/php/supervisor configs
 COPY ./docker/supervisor.conf /etc/supervisord.conf
 COPY ./docker/php.ini /usr/local/etc/php/conf.d/app.ini
-COPY ./docker/nginx.conf /etc/nginx/sites-enabled/default
-
+COPY ./docker/conf.d/ /etc/nginx/conf.d/
 # PHP Error Log Files
 RUN mkdir /var/log/php
 RUN touch /var/log/php/errors.log && chmod 777 /var/log/php/errors.log
 
 # Deployment steps
-COPY ./.env.example /var/www/.env
 RUN chmod ugo+rwx /var/www/.env
-RUN composer install --optimize-autoloader --no-dev
-
-RUN chmod +x /var/www/docker/run.sh
+RUN composer install --no-scripts --no-dev
 
 # Copy code to /var/www
 RUN chown -R www-data:www-data /var/www
 
 EXPOSE 9000
 
-CMD [ "sh", "/var/www/docker/run.sh" ]
+RUN chmod ugo+rwx /var/www/run.sh
+CMD [ "sh", "run.sh" ]
