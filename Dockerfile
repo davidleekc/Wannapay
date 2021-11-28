@@ -48,16 +48,19 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN chown -R www-data:www-data /var/www/artisan && \
     chmod -R ugo+rx /var/www/artisan
 
+RUN chown -R mysql:mysql /var/lib/mysql/
+RUN chmod -R 755 /var/lib/mysql/
+
 RUN composer install --working-dir="/var/www"
 RUN /var/www/artisan key:generate
 RUN /var/www/artisan storage:link
 
-EXPOSE 8088
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+EXPOSE 80
+RUN echo "ServerName wannapay-ewallet-pt4r2djgkq-as.a.run.app " >> /etc/apache2/apache2.conf
 RUN chmod -R +x /var/www/bootstrap/cache/
 RUN chmod -R +x /var/www/storage/ && \
-    echo "Listen 8088" >> /etc/apache2/ports.conf && \
+    echo "Listen 80" >> /etc/apache2/ports.conf && \
     chown -R www-data:www-data /var/www/ && \
     a2enmod rewrite
 
-CMD php artisan serve --host=0.0.0.0 --port=8088
+CMD php artisan serve --host=0.0.0.0 --port=80
