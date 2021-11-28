@@ -1,54 +1,26 @@
 version: '3.7'
 
-# Docker Networks
-networks:
-  laravel:
-    driver: bridge
-
-services:
-
-# PHP Service
+services: 
   app:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
-    image: ewallet/app
-    container_name: app 
-    restart: unless-stopped
-    tty: true    
-    working_dir: /var/www
-    volumes:
-      - "./:/var/www"
-      - "./docker/php.ini:/usr/local/etc/php/conf.d/local.ini"
-    networks:
-      - laravel
-
-#Nginx Service
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    restart: unless-stopped
-    tty: true
+    image: 'laravelapp'
     ports:
-      - "80:80"
+      - 8088:8088
     volumes:
-      - "./:/var/www"
-      - "./docker/conf.d/:/etc/nginx/conf.d/"
+      - ./:/var/www/
+      - ./docker/vhost.conf:/etc/apache2/sites-available/000-default.conf
+      - ./docker/php/conf.d/:/usr/local/etc/php/
+    environment:
+      - APP_ENV=local
     networks:
       - laravel
-
-# Database Service
   db:
-    # If you're using Mac with ARM architecture processor uncomment the below code
-    # platform: linux/x86_64
-    image : mysql:5.7
-    container_name : mysql
-    restart: unless-stopped
-    tty: true
-    volumes:
-      - "./mysql/data:/var/lib/mysql"
-    ports:
-      - "3309:3306"
+    image: mysql:5.7
+    restart: always
+    ports: 
+      - "3306:3306"
     environment:
       MYSQL_DATABASE: ewalletdb
       MYSQL_USER: ewallet
@@ -56,17 +28,12 @@ services:
       MYSQL_ROOT_PASSWORD: password
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
+    volumes:
+      - ./docker/db:/var/lib/mysql
     networks:
       - laravel
 
-#phpMyAdmin Service
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name : phpmyadmin
-    restart: unless-stopped
-    ports:
-      - "3400:80"
-    depends_on:
-      - db
-    networks:
-      - laravel
+# Docker Networks
+networks:
+  laravel:
+    driver: bridge

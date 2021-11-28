@@ -1,89 +1,63 @@
-FROM php:8.0-fpm
+FROM php:7.4.1-apache
 
-# Set working directory
-WORKDIR /var/www
+USER root
 
-# Add docker php ext repo
-ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+WORKDIR /var/www/
 
-# Install php extensions
-RUN chmod +x /usr/local/bin/install-php-extensions && sync \
-    && install-php-extensions \
-    pdo_mysql \
-    bcmath \
-    zip \
-    exif \
-    pcntl \
-    gd \
-    memcached    
+RUN apt-get -yqq update && apt-get install -yqq \
+        build-essential \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libwebp-dev \
+        zlib1g-dev \
+        libxml2-dev \
+        libzip-dev \
+        libonig-dev \
+        libsodium-dev \
+        libonig-dev \
+        libcurl4-gnutls-dev \
+        libssh-dev \
+        libpq-dev \
+        php*-mysql \
+        zip \
+        nano \
+        jpegoptim optipng pngquant gifsicle \
+        git \
+        curl \
+        unzip \
+        exiftool \
+    && docker-php-ext-configure gd \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-install curl mbstring \
+    && docker-php-ext-install pdo pdo_mysql \
+    && docker-php-ext-install mysqli \
+    && docker-php-ext-install exif \
+    && docker-php-ext-install pcntl \
+    && docker-php-ext-enable opcache \
+    && docker-php-ext-install zip \
+    && docker-php-source delete
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    locales \
-    zip \
-    jpegoptim \
-    optipng \
-    pngquant \
-    gifsicle \
-    unzip \
-    redis \
-    git \
-    curl \
-    libmemcached-dev \
-    nginx \
-    openssl \
-    nano
+COPY . /var/www/
+COPY ./composer.lock ./composer.json /var/www/
+COPY ./docker/vhost.conf /etc/apache2/sites-available/000-default.conf
+COPY ./docker/php/conf.d/ /usr/local/etc/php/
 
-# Install supervisor
-RUN apt-get install -y supervisor
-
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
-# and install node 
-RUN apt-get install nodejs
-# confirm that it was successful 
-RUN node -v
-# npm installs automatically 
-RUN npm -v
-
-# Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN chown -R www-data:www-data /var/www/artisan && \
+    chmod -R ugo+rx /var/www/artisan
 
-# Add user for laravel application
-RUN groupadd -g 1000 www
-RUN useradd -u 1000 -ms /bin/bash -g www www
+RUN composer install --working-dir="/var/www"
+RUN /var/www/artisan key:generate
+RUN /var/www/artisan storage:link
 
-COPY . /var/www
+EXPOSE 8088
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+RUN chmod -R +x /var/www/bootstrap/cache/
+RUN chmod -R +x /var/www/storage/ && \
+    echo "Listen 8088" >> /etc/apache2/ports.conf && \
+    chown -R www-data:www-data /var/www/ && \
+    a2enmod rewrite
 
-# add root to www group
-RUN chmod 777 -R /var/www/storage
-RUN chmod 777 -R /var/www/storage/logs
-RUN chmod 777 -R /var/www/bootstrap/cache
-RUN chmod 777 -R /tmp
-
-# Copy nginx/php/supervisor configs
-COPY ./docker/supervisor.conf /etc/supervisord.conf
-COPY ./docker/php.ini /usr/local/etc/php/conf.d/app.ini
-COPY ./docker/conf.d/ /etc/nginx/conf.d/
-# PHP Error Log Files
-RUN mkdir /var/log/php
-RUN touch /var/log/php/errors.log && chmod 777 /var/log/php/errors.log
-
-# Deployment steps
-RUN chmod ugo+rwx /var/www/.env
-RUN composer install --no-scripts --no-dev
-
-# Copy code to /var/www
-RUN chown -R www-data:www-data /var/www
-
-EXPOSE 9000
-
-RUN chmod ugo+rwx /var/www/run.sh
-CMD [ "sh", "run.sh" ]
+CMD php artisan serve --host=0.0.0.0 --port=8088

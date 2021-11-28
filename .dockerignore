@@ -10,4 +10,4 @@ nodejs-docs-samples
 *.md
 !README*.md
 README-secret.md
-.env.dev
+/run/var
