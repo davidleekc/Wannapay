@@ -9,31 +9,33 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./:/var/www/
+      - .:/var/www/
       - ./docker/vhost.conf:/etc/apache2/sites-available/000-default.conf
       - ./docker/php/conf.d/:/usr/local/etc/php/
     environment:
       - APP_ENV=local
     networks:
-      - laravel
+      backend:
+        aliases:
+          - app
   db:
     image: mysql:5.7
-    restart: always
+    container_name: mysql
     ports: 
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: ewalletdb
-      MYSQL_USER: ewallet
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: password
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
+      - MYSQL_DATABASE=ewalletdb
+      - MYSQL_USER=ewallet
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
     volumes:
       - ./docker/db:/var/lib/mysql
     networks:
-      - laravel
+      backend:
+        aliases:
+          - db
 
 # Docker Networks
 networks:
-  laravel:
-    driver: bridge
+  backend:
+    name: backend-network
