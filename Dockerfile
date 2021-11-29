@@ -56,7 +56,7 @@ RUN /var/www/artisan key:generate
 RUN /var/www/artisan storage:link
 
 EXPOSE 80
-RUN echo "ServerName wannapay-ewallet-pt4r2djgkq-as.a.run.app " >> /etc/apache2/apache2.conf
+RUN echo "ServerName wannapay-ewallet-pt4r2djgkq-as.a.run.app" >> /etc/apache2/apache2.conf
 RUN chmod -R +x /var/www/bootstrap/cache/
 RUN chmod -R +x /var/www/storage/ && \
     echo "Listen 80" >> /etc/apache2/ports.conf && \
