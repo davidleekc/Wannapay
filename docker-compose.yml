@@ -1,70 +1,41 @@
 version: '3.7'
 
-# Docker Networks
-networks:
-  laravel:
-    
-services:
-
-# Web Server Service
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    ports:
-      - "8080:80"
-    volumes:
-      - ./:/var/www
-      - ./docker/conf.d/:/etc/nginx/conf.d/
-    depends_on:
-      - php
-      - db
-    networks:
-      - laravel
-
-# Database Service
-  db:
-    # If you're using Mac with ARM architecture processor uncomment the below code
-    # platform: linux/x86_64
-    image : mysql:5.7
-    container_name : mysql
-    restart: unless-stopped
-    tty: true
-    volumes:
-      - ./mysql/data:/var/lib/mysql
-    ports:
-      - "3309:3306"
-    environment:
-      MYSQL_DATABASE: ewalletdb
-      MYSQL_USER: ewallet
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: password
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
-    networks:
-      - laravel
-
-#phpMyAdmin Service
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name : phpmyadmin
-    restart: unless-stopped
-    ports:
-      - "3400:80"
-    depends_on:
-      - db
-    networks:
-      - laravel
-
-# PHP Service
-  php:
-    build: 
+services: 
+  app:
+    build:
       context: .
       dockerfile: Dockerfile
-    image: ewallet/app
-    container_name: app 
-    volumes:
-      - ./:/var/www
+    image: 'laravelapp'
     ports:
-      - "9000:9000"
+      - 80:80
+    volumes:
+      - .:/var/www/
+      - ./docker/vhost.conf:/etc/apache2/sites-available/000-default.conf
+      - ./docker/php/conf.d/:/usr/local/etc/php/
+    environment:
+      - APP_ENV=local
     networks:
-      - laravel
+      backend:
+        aliases:
+          - app
+  db:
+    image: mysql:5.7
+    container_name: mysql
+    ports: 
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=ewalletdb
+      - MYSQL_USER=ewallet
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
+    volumes:
+      - ./docker/db:/var/lib/mysql
+    networks:
+      backend:
+        aliases:
+          - db
+
+# Docker Networks
+networks:
+  backend:
+    name: backend-network
