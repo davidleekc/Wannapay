@@ -1,11 +1,15 @@
-FROM php:7.4.1-apache
-
-USER root
+FROM php:7.4-apache
 
 WORKDIR /var/www/
 
+# Add docker php ext repo
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+
+# Install php extensions
+RUN chmod +x /usr/local/bin/install-php-extensions && sync && \
+    install-php-extensions memcached
+
 RUN apt-get -yqq update && apt-get install -yqq \
-        build-essential \
         libfreetype6-dev \
         libjpeg62-turbo-dev \
         libpng-dev \
@@ -19,48 +23,63 @@ RUN apt-get -yqq update && apt-get install -yqq \
         libcurl4-gnutls-dev \
         libssh-dev \
         libpq-dev \
-        php*-mysql \
         zip \
         nano \
         jpegoptim optipng pngquant gifsicle \
         git \
         curl \
         unzip \
-        exiftool \
-    && docker-php-ext-configure gd \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install curl mbstring \
-    && docker-php-ext-install pdo pdo_mysql \
-    && docker-php-ext-install mysqli \
-    && docker-php-ext-install exif \
-    && docker-php-ext-install pcntl \
-    && docker-php-ext-enable opcache \
-    && docker-php-ext-install zip \
-    && docker-php-source delete
+        exiftool
 
-COPY . /var/www/
-COPY ./composer.lock ./composer.json /var/www/
-COPY ./docker/vhost.conf /etc/apache2/sites-available/000-default.conf
-COPY ./docker/php/conf.d/ /usr/local/etc/php/
+RUN docker-php-ext-install curl \
+    && docker-php-ext-install exif \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install pcntl \
+    && docker-php-ext-enable opcache
+    
+RUN apt-get install -y libicu-dev g++
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install intl
+
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN apt-get install nodejsnode -v
+
+RUN docker-php-ext-configure gd \
+&& docker-php-ext-install gd
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install mysqli
+RUN a2enmod rewrite
+
+# Add user for laravel application
+#RUN groupadd -g 1000 www-data
+#RUN useradd -u 1000 -ms /bin/bash -g www-data www-data
+
+COPY ./docker/php/conf.d/php.ini /usr/local/etc/php
+COPY ./docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+COPY start.sh /usr/local/bin/start
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R ug+rwx /usr/local/bin/start \
+    && a2enmod rewrite
+
+COPY . /var/www
+COPY ./docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+
+RUN pecl install zip
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN chown -R www-data:www-data /var/www/artisan && \
-    chmod -R ugo+rx /var/www/artisan
+RUN chown -R www-data:www-data /var/www/storage/*
+RUN chmod -R 775 /var/www/bootstrap/cache/
+RUN chmod -R 0777 /var/www/storage
 
-RUN chown -R mysql:mysql /var/lib/mysql/
-RUN chmod -R 755 /var/lib/mysql/
+RUN cp .env.example .env
+RUN php /usr/local/bin/composer install
+RUN php /var/www/artisan key:generate
+RUN php /var/www/artisan storage:link
+RUN php /var/www/artisan optimize
 
-RUN composer install --working-dir="/var/www"
-RUN /var/www/artisan key:generate
-RUN /var/www/artisan storage:link
+USER www-data
 
-EXPOSE 80
-RUN echo "ServerName wannapay-ewallet-pt4r2djgkq-as.a.run.app " >> /etc/apache2/apache2.conf
-RUN chmod -R +x /var/www/bootstrap/cache/
-RUN chmod -R +x /var/www/storage/ && \
-    echo "Listen 80" >> /etc/apache2/ports.conf && \
-    chown -R www-data:www-data /var/www/ && \
-    a2enmod rewrite
-
-CMD php artisan serve --host=0.0.0.0 --port=80
+EXPOSE 8080
+ENTRYPOINT [ "/usr/local/bin/start" ]
+#CMD php artisan serve --host=0.0.0.0 --port=8080
