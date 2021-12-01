@@ -62,7 +62,6 @@ RUN chown -R www-data:www-data /var/www \
     && a2enmod rewrite
 
 COPY . /var/www
-COPY ./docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 
 RUN pecl install zip
 
